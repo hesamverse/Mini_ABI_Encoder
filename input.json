@@ -1,4 +1,4 @@
 {
-    "signature": "log(string)",
-    "params": ["Hello, Hesam"]
-}  
+  "signature": "log(string)",
+  "params": ["Hello, Hesam"]
+}
