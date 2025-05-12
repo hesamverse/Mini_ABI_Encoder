@@ -146,6 +146,3 @@ char *encode_string(const char *value, int *out_len) {
     result[*out_len] = '\0';
     return result;
 }
-
-    return result;
-}
