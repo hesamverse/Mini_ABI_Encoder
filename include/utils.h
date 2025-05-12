@@ -9,4 +9,6 @@ typedef struct {
 
 CLIInput parse_cli_args(int argc, char *argv[]);
 
+char *my_strdup(const char *s);  // Declaration only
+
 #endif
