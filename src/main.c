@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
     // Step 1: Encode all params
     char *encoded_params[10];
-    int total_len = 0;
+    int total_len = 8; // Start with selector length (8 hex chars)
 
     for (int i = 0; i < fsig.param_count; i++) {
         const char *type = fsig.param_types[i];
@@ -53,8 +53,10 @@ int main(int argc, char *argv[]) {
     selector[8] = '\0';
 
     // Step 3: Build final calldata
-    char *calldata = malloc(total_len + 9); // 8 for selector + 1 for '\0'
-    strcpy(calldata, selector);
+    char *calldata = malloc(total_len + 1); // +1 for null-terminator
+    calldata[0] = '\0'; // Ensure it's initialized as empty string
+    strcat(calldata, selector);
+
     for (int i = 0; i < fsig.param_count; i++) {
         printf("Appending param %d: %s\n", i + 1, encoded_params[i]);
         strcat(calldata, encoded_params[i]);
