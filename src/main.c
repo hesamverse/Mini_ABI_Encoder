@@ -56,11 +56,12 @@ int main(int argc, char *argv[]) {
     char *calldata = malloc(total_len + 9); // 8 for selector + 1 for '\0'
     strcpy(calldata, selector);
     for (int i = 0; i < fsig.param_count; i++) {
+        printf("Appending param %d: %s\n", i + 1, encoded_params[i]);
         strcat(calldata, encoded_params[i]);
         free(encoded_params[i]); // Free after use
     }
 
-    printf("Final calldata: %s\n", calldata);
+    printf("\n💡 Final calldata:\n%s\n", calldata);
     free(calldata);
 
     return 0;
