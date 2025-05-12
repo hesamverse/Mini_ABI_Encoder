@@ -53,6 +53,18 @@ int main(int argc, char *argv[]) {
             dynamic_data_len[dynamic_count] = dyn_len;
             dynamic_offset += dyn_len / 2; // Convert hex length to byte length
             dynamic_count++;
+        } else if (strcmp(type, "bytes") == 0) {
+            // Create offset hex value to be stored in static section
+            char offset_hex[65];
+            sprintf(offset_hex, "%064x", dynamic_offset);
+            encoded = my_strdup(offset_hex);
+        
+            int dyn_len = 0;
+            char *dyn = encode_bytes(value, &dyn_len);
+            dynamic_data[dynamic_count] = dyn;
+            dynamic_data_len[dynamic_count] = dyn_len;
+            dynamic_offset += dyn_len / 2;  // Convert hex length to byte count
+            dynamic_count++;
         } else {
             fprintf(stderr, "Unsupported type: %s\n", type);
             exit(EXIT_FAILURE);
