@@ -2,6 +2,13 @@
 #define ENCODER_H
 
 typedef struct {
+    char offset[65];
+    char *data; // length + value + padding
+} EncodedString;
+
+EncodedString encode_string(const char *value, int offset);
+
+typedef struct {
     char function_name[64];
     char *param_types[10];
     int param_count;
