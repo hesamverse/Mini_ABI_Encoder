@@ -5,7 +5,6 @@
 #include "utils.h"
 #include "keccak.h"
 
-
 int main(int argc, char *argv[]) {
     CLIInput input = parse_cli_args(argc, argv);
     FunctionSignature fsig = parse_function_signature(input.signature);
@@ -21,6 +20,10 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
+    // Step 1: Encode all params
+    char *encoded_params[10];
+    int total_len = 0;
+
     for (int i = 0; i < fsig.param_count; i++) {
         const char *type = fsig.param_types[i];
         const char *value = input.params[i];
@@ -35,17 +38,30 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        printf("Encoded param %d (%s): %s\n", i + 1, type, encoded);
-        free(encoded);
+        encoded_params[i] = encoded;
+        total_len += strlen(encoded);
     }
 
+    // Step 2: Keccak256(function_signature) → selector
     uint8_t hash[32];
     keccak256((uint8_t *)input.signature, strlen(input.signature), hash);
 
-    printf("Function selector: ");
+    char selector[9];
     for (int i = 0; i < 4; i++) {
-        printf("%02x", hash[i]);
+        sprintf(selector + i * 2, "%02x", hash[i]);
     }
-    printf("\n");
+    selector[8] = '\0';
+
+    // Step 3: Build final calldata
+    char *calldata = malloc(total_len + 9); // 8 for selector + 1 for '\0'
+    strcpy(calldata, selector);
+    for (int i = 0; i < fsig.param_count; i++) {
+        strcat(calldata, encoded_params[i]);
+        free(encoded_params[i]); // Free after use
+    }
+
+    printf("Final calldata: %s\n", calldata);
+    free(calldata);
+
     return 0;
 }
