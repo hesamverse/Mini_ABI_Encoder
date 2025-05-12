@@ -4,9 +4,18 @@
 #include "encoder.h"
 #include "utils.h"
 #include "keccak.h"
+#include "json_input.h"
+
 
 int main(int argc, char *argv[]) {
-    CLIInput input = parse_cli_args(argc, argv);
+    CLIInput input;
+
+    if (argc == 3 && strcmp(argv[1], "--json-file") == 0) {
+        input = parse_json_file(argv[2]);
+    } else {
+        input = parse_cli_args(argc, argv);
+    }
+    
     FunctionSignature fsig = parse_function_signature(input.signature);
 
     printf("\nFunction: %s\n", fsig.function_name);
