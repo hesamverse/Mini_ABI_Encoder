@@ -20,15 +20,15 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
-    // Step 1: Encode all params
+    // Encode all parameters to their ABI format
     char *encoded_params[10];
-    int total_len = 8; // Start with selector length (8 hex chars)
+    int total_len = 8; // Start with 8 hex characters for the function selector
 
     for (int i = 0; i < fsig.param_count; i++) {
         const char *type = fsig.param_types[i];
         const char *value = input.params[i];
         char *encoded = NULL;
-    
+
         if (strcmp(type, "address") == 0) {
             encoded = encode_address(value);
         } else if (strcmp(type, "uint256") == 0) {
@@ -39,13 +39,12 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Unsupported type: %s\n", type);
             exit(EXIT_FAILURE);
         }
-    
+
         encoded_params[i] = encoded;
         total_len += strlen(encoded);
     }
-    
 
-    // Step 2: Keccak256(function_signature) → selector
+    // Generate function selector using keccak256(function_signature)
     uint8_t hash[32];
     keccak256((uint8_t *)input.signature, strlen(input.signature), hash);
 
@@ -55,17 +54,21 @@ int main(int argc, char *argv[]) {
     }
     selector[8] = '\0';
 
-    // Step 3: Build final calldata
-    char *calldata = malloc(total_len + 1); // +1 for null-terminator
-    calldata[0] = '\0'; // Ensure it's initialized as empty string
+    // Build final ABI-encoded calldata: selector + encoded parameters
+    char *calldata = malloc(total_len + 1); // +1 for null terminator
+    if (!calldata) {
+        fprintf(stderr, "Memory allocation failed for calldata.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    calldata[0] = '\0';
     strcat(calldata, selector);
 
     for (int i = 0; i < fsig.param_count; i++) {
         printf("Appending param %d: %s\n", i + 1, encoded_params[i]);
         strcat(calldata, encoded_params[i]);
-        free(encoded_params[i]); // Free after use
-    }    
-    
+        free(encoded_params[i]); // Free memory after use
+    }
 
     printf("\n💡 Final calldata:\n%s\n", calldata);
     free(calldata);
