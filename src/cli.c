@@ -23,6 +23,19 @@ void print_help() {
     printf("  abi_encoder -i\n");
 }
 
+void show_help() {
+    printf("Usage: ./abi_encoder [OPTIONS]\n\n");
+    printf("Options:\n");
+    printf("  --signature <sig>      Function signature (e.g., transfer(address,uint256))\n");
+    printf("  --params <args>        Comma-separated parameter values\n");
+    printf("  --json-file <file>     JSON file with signature and parameters\n");
+    printf("  -i, --interactive      Interactive mode\n");
+    printf("  --only-selector        Output only the 4-byte function selector\n");
+    printf("  --pretty               Pretty print output\n");
+    printf("  --json                 Output as JSON object\n");
+    printf("  -h, --help             Show this help message\n");
+}
+
 
 CLIInput parse_cli_args_full(int argc, char *argv[], int *only_selector, int *pretty, int *json_out, int *interactive) {
     CLIInput input = {0};
