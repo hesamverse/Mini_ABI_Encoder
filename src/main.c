@@ -1,15 +1,21 @@
 #include <stdio.h>
 #include "encoder.h"
+#include "utils.h"
 
-int main() {
-    const char *signature = "transfer(address,uint256)";
-    FunctionSignature parsed = parse_function_signature(signature);
+int main(int argc, char *argv[]) {
+    CLIInput input = parse_cli_args(argc, argv);
+    FunctionSignature fsig = parse_function_signature(input.signature);
 
-    printf("Function name: %s\n", parsed.function_name);
-    printf("Param count: %d\n", parsed.param_count);
-    for (int i = 0; i < parsed.param_count; i++) {
-        printf("Param %d: %s\n", i + 1, parsed.param_types[i]);
+    printf("\nFunction: %s\n", fsig.function_name);
+    printf("Types   :");
+    for (int i = 0; i < fsig.param_count; i++) {
+        printf(" %s", fsig.param_types[i]);
     }
+    printf("\nValues  :");
+    for (int i = 0; i < input.param_count; i++) {
+        printf(" %s", input.params[i]);
+    }
+    printf("\n");
 
     return 0;
 }
