@@ -12,6 +12,6 @@ char *encode_address(const char *value);
 char *encode_uint256(const char *value);
 char *encode_bool(const char *value);
 char *encode_string(const char *value, int *out_len);
-
+char *encode_bytes(const char *hex_data, int *out_len);
 
 #endif
