@@ -3,6 +3,8 @@
 #include <string.h>
 #include "encoder.h"
 #include "utils.h"
+#include "keccak.h"
+
 
 int main(int argc, char *argv[]) {
     CLIInput input = parse_cli_args(argc, argv);
@@ -37,5 +39,13 @@ int main(int argc, char *argv[]) {
         free(encoded);
     }
 
+    uint8_t hash[32];
+    keccak256((uint8_t *)input.signature, strlen(input.signature), hash);
+
+    printf("Function selector: ");
+    for (int i = 0; i < 4; i++) {
+        printf("%02x", hash[i]);
+    }
+    printf("\n");
     return 0;
 }
