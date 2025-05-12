@@ -4,13 +4,8 @@
 #include <stdint.h>
 #include <ctype.h>
 #include "encoder.h"
+#include "utils.h" // <-- this gives you the declaration
 
-// Simple implementation of strdup (to avoid POSIX dependency)
-char *my_strdup(const char *s) {
-    char *dup = malloc(strlen(s) + 1);
-    if (dup) strcpy(dup, s);
-    return dup;
-}
 
 // Pads a hex string with leading zeros to fit 64 chars (32 bytes)
 void left_pad_hex(char *dest, const char *src, int width) {
