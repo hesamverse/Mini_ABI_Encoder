@@ -20,10 +20,16 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
-    // Encode all parameters to their ABI format
-    char *encoded_params[10];
-    int total_len = 8; // Start with 8 hex characters for the function selector
+    // Arrays to hold encoded static and dynamic parameter values
+    char *encoded_params[10];       // Static encoded values or offsets
+    char *dynamic_data[10];         // Dynamic section data (e.g., for string/bytes)
+    int dynamic_data_len[10];       // Lengths of each dynamic hex-encoded segment
+    int dynamic_count = 0;
+    int dynamic_offset = 32 * fsig.param_count;  // Offset in bytes
 
+    int total_static_len = 8; // Initial length (8 hex chars for the selector)
+
+    // Encode each parameter based on its type
     for (int i = 0; i < fsig.param_count; i++) {
         const char *type = fsig.param_types[i];
         const char *value = input.params[i];
@@ -35,16 +41,33 @@ int main(int argc, char *argv[]) {
             encoded = encode_uint256(value);
         } else if (strcmp(type, "bool") == 0) {
             encoded = encode_bool(value);
+        } else if (strcmp(type, "string") == 0) {
+            // Generate offset placeholder for dynamic string
+            char offset_hex[65];
+            sprintf(offset_hex, "%064x", dynamic_offset);
+            encoded = my_strdup(offset_hex);
+
+            int dyn_len = 0;
+            char *dyn = encode_string(value, &dyn_len);
+            dynamic_data[dynamic_count] = dyn;
+            dynamic_data_len[dynamic_count] = dyn_len;
+            dynamic_offset += dyn_len / 2; // Convert hex length to byte length
+            dynamic_count++;
         } else {
             fprintf(stderr, "Unsupported type: %s\n", type);
             exit(EXIT_FAILURE);
         }
 
         encoded_params[i] = encoded;
-        total_len += strlen(encoded);
+        total_static_len += strlen(encoded);
     }
 
-    // Generate function selector using keccak256(function_signature)
+    // Add lengths of all dynamic segments
+    for (int i = 0; i < dynamic_count; i++) {
+        total_static_len += dynamic_data_len[i];
+    }
+
+    // Generate function selector using keccak256 of the signature string
     uint8_t hash[32];
     keccak256((uint8_t *)input.signature, strlen(input.signature), hash);
 
@@ -54,22 +77,30 @@ int main(int argc, char *argv[]) {
     }
     selector[8] = '\0';
 
-    // Build final ABI-encoded calldata: selector + encoded parameters
-    char *calldata = malloc(total_len + 1); // +1 for null terminator
+    // Allocate buffer for final calldata (selector + static + dynamic)
+    char *calldata = malloc(total_static_len + 1);
     if (!calldata) {
         fprintf(stderr, "Memory allocation failed for calldata.\n");
         exit(EXIT_FAILURE);
     }
-
     calldata[0] = '\0';
-    strcat(calldata, selector);
 
+    // Build the calldata: selector + encoded static values
+    strcat(calldata, selector);
     for (int i = 0; i < fsig.param_count; i++) {
         printf("Appending param %d: %s\n", i + 1, encoded_params[i]);
         strcat(calldata, encoded_params[i]);
-        free(encoded_params[i]); // Free memory after use
+        free(encoded_params[i]);
     }
 
+    // Append dynamic section at the end (string, bytes, etc.)
+    for (int i = 0; i < dynamic_count; i++) {
+        printf("Appending dynamic %d: %s\n", i + 1, dynamic_data[i]);
+        strcat(calldata, dynamic_data[i]);
+        free(dynamic_data[i]);
+    }
+
+    // Final output
     printf("\n💡 Final calldata:\n%s\n", calldata);
     free(calldata);
 
