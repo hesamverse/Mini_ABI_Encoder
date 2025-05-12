@@ -65,7 +65,6 @@ static void keccakf(uint64_t st[25]) {
 void keccak256(const uint8_t *input, size_t inlen, uint8_t output[32]) {
     uint64_t st[25];
     uint8_t temp[200];
-    size_t i;
 
     memset(st, 0, sizeof(st));
     memset(temp, 0, sizeof(temp));
