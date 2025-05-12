@@ -4,17 +4,25 @@
 #include "cli.h"
 #include "utils.h"
 
-void show_help() {
+void print_help() {
+    printf("Mini ABI Encoder - Encode Solidity function calls\n\n");
     printf("Usage:\n");
-    printf("  abi_encoder --signature \"<sig>\" --params \"<param1,param2,...>\" [options]\n");
-    printf("\nOptions:\n");
-    printf("  --only-selector       Print only 4-byte selector\n");
-    printf("  --pretty              Print nicely formatted output\n");
-    printf("  --json-out            Output as JSON\n");
-    printf("  --json-file FILE      Load input from JSON file\n");
-    printf("  -i, --interactive     Prompt for input interactively\n");
-    printf("  -h, --help            Show this help message\n");
+    printf("  abi_encoder --signature \"func(type1,type2)\" --params \"val1,val2\" [OPTIONS]\n");
+    printf("  abi_encoder --json-file <file.json>\n");
+    printf("  abi_encoder --interactive | -i\n\n");
+    printf("Options:\n");
+    printf("  --only-selector        Output only the 4-byte function selector\n");
+    printf("  --pretty               Output formatted calldata with labels\n");
+    printf("  --json                 Output calldata in JSON format { selector, calldata }\n");
+    printf("  --json-file <file>     Load signature and parameters from a JSON file\n");
+    printf("  --interactive, -i      Prompt interactively for signature and params\n");
+    printf("  --help, -h             Show this help message\n\n");
+    printf("Examples:\n");
+    printf("  abi_encoder --signature \"transfer(address,uint256)\" --params \"0xabc...,1000\"\n");
+    printf("  abi_encoder --json-file tests/json/transfer.json --json\n");
+    printf("  abi_encoder -i\n");
 }
+
 
 CLIInput parse_cli_args_full(int argc, char *argv[], int *only_selector, int *pretty, int *json_out, int *interactive) {
     CLIInput input = {0};

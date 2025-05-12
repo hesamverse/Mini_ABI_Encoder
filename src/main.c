@@ -23,6 +23,12 @@ int main(int argc, char *argv[]) {
 
     CLIInput input;
 
+    // Help flag handling
+    if (argc >= 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)) {
+        print_help();
+        return 0;
+    }
+
     // Input mode: JSON file mode
     if (argc == 3 && strcmp(argv[1], "--json-file") == 0) {
         input = parse_json_file(argv[2]);
