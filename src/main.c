@@ -28,19 +28,22 @@ int main(int argc, char *argv[]) {
         const char *type = fsig.param_types[i];
         const char *value = input.params[i];
         char *encoded = NULL;
-
+    
         if (strcmp(type, "address") == 0) {
             encoded = encode_address(value);
         } else if (strcmp(type, "uint256") == 0) {
             encoded = encode_uint256(value);
+        } else if (strcmp(type, "bool") == 0) {
+            encoded = encode_bool(value);
         } else {
             fprintf(stderr, "Unsupported type: %s\n", type);
             exit(EXIT_FAILURE);
         }
-
+    
         encoded_params[i] = encoded;
         total_len += strlen(encoded);
     }
+    
 
     // Step 2: Keccak256(function_signature) → selector
     uint8_t hash[32];
@@ -61,7 +64,8 @@ int main(int argc, char *argv[]) {
         printf("Appending param %d: %s\n", i + 1, encoded_params[i]);
         strcat(calldata, encoded_params[i]);
         free(encoded_params[i]); // Free after use
-    }
+    }    
+    
 
     printf("\n💡 Final calldata:\n%s\n", calldata);
     free(calldata);
