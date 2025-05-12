@@ -5,6 +5,22 @@
 #include <ctype.h>
 #include "encoder.h"
 
+// Simple implementation of strdup (to avoid POSIX dependency)
+char *my_strdup(const char *s) {
+    char *dup = malloc(strlen(s) + 1);
+    if (dup) strcpy(dup, s);
+    return dup;
+}
+
+// Pads a hex string with leading zeros to fit 64 chars (32 bytes)
+void left_pad_hex(char *dest, const char *src, int width) {
+    int len = strlen(src);
+    int pad = width - len;
+    memset(dest, '0', pad);
+    strcpy(dest + pad, src);
+    dest[width] = '\0';
+}
+
 // ====================== FUNCTION SIGNATURE PARSER =====================
 
 FunctionSignature parse_function_signature(const char *signature) {
@@ -30,7 +46,7 @@ FunctionSignature parse_function_signature(const char *signature) {
 
     char *token = strtok(params_buffer, ",");
     while (token && result.param_count < 10) {
-        result.param_types[result.param_count] = strdup(token);
+        result.param_types[result.param_count] = my_strdup(token);
         result.param_count++;
         token = strtok(NULL, ",");
     }
@@ -54,17 +70,18 @@ char *encode_address(const char *value) {
         exit(EXIT_FAILURE);
     }
 
-    char *result = malloc(65); // 32 bytes = 64 chars + \0
-    sprintf(result, "%064s", clean); // zero-padding on the left
+    char *result = malloc(65); // 32 bytes = 64 chars + null terminator
+    left_pad_hex(result, clean, 64);
     return result;
 }
 
 char *encode_uint256(const char *value) {
+    // For now, only supports values within unsigned long long range
     char hex[65] = {0};
-    unsigned long long int_val = strtoull(value, NULL, 10); // limited for now
+    unsigned long long int_val = strtoull(value, NULL, 10);
     sprintf(hex, "%llx", int_val);
 
     char *result = malloc(65);
-    sprintf(result, "%064s", hex); // zero-padding to 64 hex chars
+    left_pad_hex(result, hex, 64);
     return result;
 }
