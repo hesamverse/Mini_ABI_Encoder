@@ -140,3 +140,45 @@ char *encode_string(const char *value, int *out_len) {
     result[*out_len] = '\0';
     return result;
 }
+
+// Encodes a bytes-type value (hex string with or without 0x prefix) into ABI dynamic format
+// ABI Format: [length (32 bytes)] + [data (padded to 32 bytes)]
+// Example input: "0xdeadbeef"
+char *encode_bytes(const char *hex_data, int *out_len) {
+    const char *clean = strip_0x(hex_data);
+    size_t hex_len = strlen(clean);
+
+    // Ensure even number of characters (2 chars per byte)
+    if (hex_len % 2 != 0) {
+        fprintf(stderr, "Invalid bytes: length must be even (2 hex digits per byte)\n");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t byte_len = hex_len / 2;
+    size_t padded_bytes = ((byte_len + 31) / 32) * 32;
+
+    // Total hex output length: 64 chars for length + 2 chars per padded byte
+    *out_len = 64 + padded_bytes * 2;
+    char *result = malloc(*out_len + 1); // +1 for null-terminator
+    if (!result) {
+        fprintf(stderr, "Memory allocation failed in encode_bytes\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Encode the byte length (in hex) as the first 32 bytes
+    sprintf(result, "%064lx", byte_len);
+
+    // Copy hex data as-is, and pad with zeros to reach 32-byte alignment
+    for (size_t i = 0; i < padded_bytes; i++) {
+        if (i < byte_len) {
+            result[64 + i * 2] = clean[i * 2];
+            result[64 + i * 2 + 1] = clean[i * 2 + 1];
+        } else {
+            result[64 + i * 2] = '0';
+            result[64 + i * 2 + 1] = '0';
+        }
+    }
+
+    result[*out_len] = '\0';
+    return result;
+}
