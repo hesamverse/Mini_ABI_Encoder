@@ -6,6 +6,7 @@
 #include "keccak.h"
 #include "json_input.h"
 #include "cli.h"
+#include "gui.h"
 
 /**
  * Entry point of the Mini ABI Encoder CLI tool.
@@ -23,6 +24,10 @@ int main(int argc, char *argv[]) {
 
     CLIInput input;
 
+    if (argc == 2 && strcmp(argv[1], "--gui") == 0) {
+        return launch_gui(argc, argv);
+    }
+    
     // Help flag handling
     if (argc >= 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)) {
         print_help();
