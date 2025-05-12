@@ -123,26 +123,22 @@ char *encode_string(const char *value, int *out_len) {
     return result;
 }
 
-char *encode_string(const char *value, int *out_len) {
-    size_t len = strlen(value);
-    size_t padded_len = ((len + 31) / 32) * 32;
-    *out_len = 64 + padded_len * 2; // 64 for length + hex data
-
-    char *result = malloc(*out_len + 1); // +1 for '\0'
+char *encode_bool(const char *value) {
+    char *result = malloc(65); // 64 hex + null
     if (!result) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
 
-    // Step 1: length field (in hex, 32 bytes left-padded)
-    sprintf(result, "%064lx", len);
-
-    // Step 2: data (convert each char to hex, pad with 0x00)
-    for (size_t i = 0; i < padded_len; i++) {
-        char byte = (i < len) ? value[i] : 0;
-        sprintf(result + 64 + i * 2, "%02x", (unsigned char)byte);
+    if (strcmp(value, "true") == 0 || strcmp(value, "1") == 0) {
+        sprintf(result, "%064x", 1);
+    } else if (strcmp(value, "false") == 0 || strcmp(value, "0") == 0) {
+        sprintf(result, "%064x", 0);
+    } else {
+        fprintf(stderr, "Invalid boolean value: %s\n", value);
+        free(result);
+        exit(EXIT_FAILURE);
     }
 
-    result[*out_len] = '\0';
     return result;
 }
