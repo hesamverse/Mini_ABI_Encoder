@@ -48,7 +48,9 @@ CLIInput parse_json_file(const char *filename) {
         fprintf(stderr, "Invalid or missing 'signature' in JSON\n");
         exit(EXIT_FAILURE);
     }
-    input.signature = my_strdup(sig->valuestring);
+    strncpy(input.signature, sig->valuestring, sizeof(input.signature) - 1);
+    input.signature[sizeof(input.signature) - 1] = '\0';  // null-terminate for safety
+
 
     // Parse "params"
     cJSON *params = cJSON_GetObjectItemCaseSensitive(root, "params");
