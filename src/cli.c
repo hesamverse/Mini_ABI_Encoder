@@ -43,6 +43,9 @@ CLIInput parse_cli_args_full(int argc, char *argv[], int *only_selector, int *pr
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--only-selector") == 0) {
             *only_selector = 1;
+        } else if (strcmp(argv[i], "--gui") == 0) {
+            // Do nothing; handled earlier in main
+            continue;
         } else if (strcmp(argv[i], "--pretty") == 0) {
             *pretty = 1;
         } else if (strcmp(argv[i], "--json-out") == 0) {

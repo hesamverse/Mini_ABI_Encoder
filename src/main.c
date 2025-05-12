@@ -15,31 +15,39 @@
  *   - Interactive user prompts
  *   - JSON-based input for automation
  *   - Optional output formats: raw, pretty, JSON, selector-only
+ *   - GUI mode for beginner users
  */
 int main(int argc, char *argv[]) {
-    int only_selector = 0;  // Flag: output only the 4-byte selector
-    int pretty = 0;         // Flag: output human-readable format
-    int json_out = 0;       // Flag: output as JSON object
-    int interactive = 0;    // Flag: enable stdin prompt
+    int only_selector = 0;
+    int pretty = 0;
+    int json_out = 0;
+    int interactive = 0;
 
-    CLIInput input;
-
-    if (argc == 2 && strcmp(argv[1], "--gui") == 0) {
-        return launch_gui(argc, argv);
+    // ✅ If --gui is present in any argument, launch GTK GUI
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--gui") == 0) {
+            return launch_gui(argc, argv);
+        }
     }
     
-    // Help flag handling
-    if (argc >= 2 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)) {
-        print_help();
-        return 0;
+
+    // ✅ Help flag
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            print_help();
+            return 0;
+        }
     }
 
-    // Input mode: JSON file mode
+    CLIInput input = {0};
+
+    // ✅ Input from JSON file
     if (argc == 3 && strcmp(argv[1], "--json-file") == 0) {
         input = parse_json_file(argv[2]);
     }
-    // Input mode: Interactive prompt
-    else if (argc == 1 || (argc >= 2 && (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--interactive") == 0))) {
+    // ✅ Interactive prompt
+    else if (argc == 1 || (argc >= 2 && 
+            (strcmp(argv[1], "-i") == 0 || strcmp(argv[1], "--interactive") == 0))) {
         interactive = 1;
         printf("Enter function signature (e.g. transfer(address,uint256)): ");
         fgets(input.signature, sizeof(input.signature), stdin);
@@ -56,15 +64,15 @@ int main(int argc, char *argv[]) {
             token = strtok(NULL, ",");
         }
     }
-    // Input mode: CLI flags
+    // ✅ CLI flags input
     else {
         input = parse_cli_args_full(argc, argv, &only_selector, &pretty, &json_out, &interactive);
     }
 
-    // Parse function signature into name and param types
+    // ✅ Parse function signature and extract function name + param types
     FunctionSignature fsig = parse_function_signature(input.signature);
 
-    // Generate 4-byte function selector using Keccak256 hash
+    // ✅ Generate Keccak-256 function selector (first 4 bytes)
     uint8_t hash[32];
     keccak256((uint8_t *)input.signature, strlen(input.signature), hash);
 
@@ -74,22 +82,20 @@ int main(int argc, char *argv[]) {
     }
     selector[8] = '\0';
 
-    // If --only-selector was passed, print and exit
+    // ✅ If only selector is requested, print and exit
     if (only_selector) {
         printf("%s\n", selector);
         return 0;
     }
 
-    // Arrays for encoded static and dynamic parameters
-    char *encoded_params[10];       // Encoded static values or offset placeholders
-    char *dynamic_data[10];         // Encoded dynamic values (e.g., string, bytes)
-    int dynamic_data_len[10];       // Length of each dynamic value in hex
+    // ✅ Encode each parameter
+    char *encoded_params[10];
+    char *dynamic_data[10];
+    int dynamic_data_len[10];
     int dynamic_count = 0;
+    int dynamic_offset = 32 * fsig.param_count;
+    int total_static_len = 8;
 
-    int dynamic_offset = 32 * fsig.param_count;  // Offset (in bytes) from start of calldata
-    int total_static_len = 8; // Initial length = selector (8 hex chars)
-
-    // Encode each parameter
     for (int i = 0; i < fsig.param_count; i++) {
         const char *type = fsig.param_types[i];
         const char *value = input.params[i];
@@ -102,7 +108,6 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(type, "bool") == 0) {
             encoded = encode_bool(value);
         } else if (strcmp(type, "string") == 0) {
-            // Store dynamic offset in static section
             char offset_hex[65];
             sprintf(offset_hex, "%064x", dynamic_offset);
             encoded = my_strdup(offset_hex);
@@ -111,7 +116,7 @@ int main(int argc, char *argv[]) {
             char *dyn = encode_string(value, &dyn_len);
             dynamic_data[dynamic_count] = dyn;
             dynamic_data_len[dynamic_count] = dyn_len;
-            dynamic_offset += dyn_len / 2;  // Count in bytes
+            dynamic_offset += dyn_len / 2;
             dynamic_count++;
         } else if (strcmp(type, "bytes") == 0) {
             char offset_hex[65];
@@ -133,34 +138,31 @@ int main(int argc, char *argv[]) {
         total_static_len += strlen(encoded);
     }
 
-    // Add dynamic section size to total
     for (int i = 0; i < dynamic_count; i++) {
         total_static_len += dynamic_data_len[i];
     }
 
-    // Allocate space for full calldata (selector + static + dynamic)
+    // ✅ Allocate buffer and build calldata: selector + static + dynamic
     char *calldata = malloc(total_static_len + 1);
     if (!calldata) {
-        fprintf(stderr, "Memory allocation failed for calldata.\n");
+        fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
 
     calldata[0] = '\0';
     strcat(calldata, selector);
 
-    // Append encoded static parameters
     for (int i = 0; i < fsig.param_count; i++) {
         strcat(calldata, encoded_params[i]);
         free(encoded_params[i]);
     }
 
-    // Append dynamic data at the end
     for (int i = 0; i < dynamic_count; i++) {
         strcat(calldata, dynamic_data[i]);
         free(dynamic_data[i]);
     }
 
-    // Output formatting
+    // ✅ Output
     if (json_out) {
         printf("{\n  \"selector\": \"%s\",\n  \"calldata\": \"%s\"\n}\n", selector, calldata);
     } else if (pretty) {
