@@ -80,3 +80,24 @@ char *encode_uint256(const char *value) {
     left_pad_hex(result, hex, 64);
     return result;
 }
+
+char *encode_bool(const char *value) {
+    char *result = malloc(65); // 64 hex + null
+    if (!result) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (strcmp(value, "true") == 0 || strcmp(value, "1") == 0) {
+        // 1 → left-padded
+        sprintf(result, "%064x", 1);
+    } else if (strcmp(value, "false") == 0 || strcmp(value, "0") == 0) {
+        sprintf(result, "%064x", 0);
+    } else {
+        fprintf(stderr, "Invalid boolean value: %s\n", value);
+        free(result);
+        exit(EXIT_FAILURE);
+    }
+
+    return result;
+}
