@@ -2,8 +2,14 @@
 #define UTILS_H
 #include "encoder.h"
 
-CLIInput parse_cli_args(int argc, char *argv[]);
+// Type definition for CLI input structure
+typedef struct {
+    char signature[256];
+    char *params[10];
+    int param_count;
+} CLIInput;
 
-char *my_strdup(const char *s);  // Declaration only
+// Custom strdup wrapper
+char *my_strdup(const char *s); // Declaration only
 
 #endif
