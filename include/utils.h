@@ -1,15 +1,26 @@
+// utils.h
+// --------------------------------------------------------
+// Utility Functions and Core Data Structures for ABI Encoder
+// --------------------------------------------------------
+// Author: Hesamverse
+// Description:
+//     Defines shared helper functions and the CLIInput struct,
+//     used for command-line parsing and parameter storage.
+//     This header must be included by any module that interacts
+//     with ABI encoding or input parsing.
+//
+
 #ifndef UTILS_H
 #define UTILS_H
-#include "encoder.h"
 
-// Type definition for CLI input structure
+// Structure to hold user-supplied function signature and parameters
 typedef struct {
-    char signature[256];
-    char *params[10];
-    int param_count;
+    char signature[256];     // Solidity-style function signature, e.g., transfer(address,uint256)
+    char *params[10];        // Parameter values, max 10 inputs
+    int param_count;         // Number of input parameters
 } CLIInput;
 
-// Custom strdup wrapper
-char *my_strdup(const char *s); // Declaration only
+// Dynamically duplicates a string (like strdup, portable)
+char *my_strdup(const char *s);
 
-#endif
+#endif // UTILS_H
