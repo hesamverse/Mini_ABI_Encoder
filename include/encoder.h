@@ -1,5 +1,6 @@
 #ifndef ENCODER_H
 #define ENCODER_H
+#include "cli.h"
 
 // Represents the parsed function signature and parameter types
 typedef struct {
@@ -24,5 +25,8 @@ char *encode_uint256(const char *value);                       // Encodes uint25
 char *encode_bool(const char *value);                          // Encodes boolean (true/false)
 char *encode_string(const char *value, int *out_len);          // Encodes dynamic string with length prefix
 char *encode_bytes(const char *hex_data, int *out_len);        // Encodes dynamic bytes (0x-prefixed hex)
+
+// Declare encode_input() for use in other files
+char *encode_input(const CLIInput *input);
 
 #endif // ENCODER_H
