@@ -24,11 +24,9 @@ int main(int argc, char *argv[]) {
     int interactive = 0;
 
     // ✅ If --gui is present in any argument, launch GTK GUI
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--gui") == 0) {
-            return launch_gui(argc, argv);
-        }
-    }
+    for (int k = i; k < argc - 1; k++) argv[k] = argv[k + 1];
+    argc--;
+    return launch_gui(argc, argv);
     
 
     // ✅ Help flag
