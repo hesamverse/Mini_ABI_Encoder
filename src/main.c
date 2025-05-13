@@ -48,6 +48,13 @@ int main(int argc, char *argv[]) {
     // Default CLI parsing (non-interactive)
     int only_selector = 0, pretty = 0, json_out = 0, interactive = 0;
     CLIInput input = parse_cli_args_full(argc, argv, &only_selector, &pretty, &json_out, &interactive);
+    
+    if (input.signature[0] == '\0' || input.param_count == 0) {
+        fprintf(stderr, "❌ Error: Missing --signature and/or --params.\nUse --help for usage.\n");
+        return 1;
+    }
+    
+
     char *result = encode_input(&input);
 
     if (result) {
